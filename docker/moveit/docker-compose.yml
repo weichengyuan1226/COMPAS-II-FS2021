@@ -1,7 +1,86 @@
+# version: '2'
+# services:
+#   ros-core:
+#     image: gramaziokohler/ros-ur-planner:20.11
+#     container_name: ros-core
+#     ports:
+#       - "11311:11311"
+#     command:
+#       - roscore
+
+#   ros-bridge:
+#     image: gramaziokohler/ros-ur-planner:20.11
+#     container_name: ros-bridge
+#     environment:
+#       - "ROS_HOSTNAME=ros-bridge"
+#       - "ROS_MASTER_URI=http://ros-core:11311"
+#     ports:
+#       - "9090:9090"
+#     depends_on:
+#       - ros-core
+#     command:
+#       - roslaunch
+#       - --wait
+#       - rosbridge_server
+#       - rosbridge_websocket.launch
+
+#   ros-fileserver:
+#     image: gramaziokohler/ros-ur-planner:20.11
+#     container_name: ros-fileserver
+#     environment:
+#       - ROS_HOSTNAME=ros-fileserver
+#       - ROS_MASTER_URI=http://ros-core:11311
+#     depends_on:
+#       - ros-core
+#     command:
+#       - roslaunch
+#       - --wait
+#       - file_server
+#       - file_server.launch
+
+#   moveit-demo:
+#     image: gramaziokohler/ros-ur-planner:20.11
+#     container_name: moveit-demo
+#     environment:
+#       - ROS_HOSTNAME=moveit-demo
+#       - ROS_MASTER_URI=http://ros-core:11311
+#       - DISPLAY=gui:0.0
+#     depends_on:
+#       - ros-core
+#       - gui
+#     command:
+#       - roslaunch
+#       - --wait
+#       - ur5_moveit_config
+#       - demo.launch
+
+#   gui:
+#     image: gramaziokohler/novnc:latest
+#     ports:
+#       - "8080:8080"
+
 version: '2'
 services:
+  moveit-demo:
+    image: gramaziokohler/ros-kinetic-moveit:20.12
+    container_name: moveit-demo
+    environment:
+      - ROS_HOSTNAME=moveit-demo
+      - ROS_MASTER_URI=http://ros-core:11311
+      # GUI: To forward the GUI to an external X11 server (eg. XMing), uncomment the following line
+      # - DISPLAY=host.docker.internal:0.0
+    depends_on:
+      - ros-core
+    command:
+      - roslaunch
+      - --wait
+      # To change the robot, select the corresponding package name here, eg. `ur10e_moveit_config`
+      - /root/catkin_ws/launch/ur10-demo.launch
+      # To launch the RVIZ GUI, change the following to true and activate the GUI option above
+      - use_rviz:=false
+
   ros-core:
-    image: gramaziokohler/ros-ur-planner:20.11
+    image: gramaziokohler/ros-kinetic-moveit:20.12
     container_name: ros-core
     ports:
       - "11311:11311"
@@ -9,7 +88,7 @@ services:
       - roscore
 
   ros-bridge:
-    image: gramaziokohler/ros-ur-planner:20.11
+    image: gramaziokohler/ros-kinetic-moveit:20.12
     container_name: ros-bridge
     environment:
       - "ROS_HOSTNAME=ros-bridge"
@@ -25,7 +104,7 @@ services:
       - rosbridge_websocket.launch
 
   ros-fileserver:
-    image: gramaziokohler/ros-ur-planner:20.11
+    image: gramaziokohler/ros-kinetic-moveit:20.12
     container_name: ros-fileserver
     environment:
       - ROS_HOSTNAME=ros-fileserver
@@ -37,24 +116,3 @@ services:
       - --wait
       - file_server
       - file_server.launch
-
-  moveit-demo:
-    image: gramaziokohler/ros-ur-planner:20.11
-    container_name: moveit-demo
-    environment:
-      - ROS_HOSTNAME=moveit-demo
-      - ROS_MASTER_URI=http://ros-core:11311
-      - DISPLAY=gui:0.0
-    depends_on:
-      - ros-core
-      - gui
-    command:
-      - roslaunch
-      - --wait
-      - ur5_moveit_config
-      - demo.launch
-
-  gui:
-    image: gramaziokohler/novnc:latest
-    ports:
-      - "8080:8080"
